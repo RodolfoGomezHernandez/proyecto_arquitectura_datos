@@ -1,0 +1,11 @@
+cliente,email,region,producto,categoria,marca,tienda,ciudad,tipo_tienda,fecha,cantidad,monto
+Rodolfo Gómez,rodolfo.gomez@gmail.com,Región del Biobío,Camiseta,Indumentaria,Nike,Mall Plaza Curicó,Curicó,Física,2026-05-01,3,15000
+Isaias Ardiles,isaias.ardiles@hotmail.com,Región del Ñuble,Zapatos,Calzado,Adidas,Tienda Líder Curicó,Curicó,Física,2026-05-02,2,45000
+Karen Valenzuela,karen.valenzuela@gmail.com,Región Metropolitana,Pantalón,Indumentaria,Levi's,Paris Curicó,Curicó,Física,2026-05-10,1,25000
+Pedro Álvarez,pedro.alvarez@hotmail.com,Región de Valparaíso,Tablet,Electrónica,Apple,Paris Curicó,Curicó,Física,2026-05-05,1,320000
+Claudio Vega,claudio.vega@hotmail.com,Región del Maule,Polera,Indumentaria,Under Armour,Lider Curicó,Curicó,Física,2026-05-07,4,52000
+Carolina Silva,carolina.silva@gmail.com,Región del Maule,Heladera,Hogar,LG,Krün Curicó,Curicó,Física,2026-04-30,1,420000
+Patricio Ruiz,patricio.ruiz@hotmail.com,Región del Maule,Bicicleta,Deportes,Trek,Mall Plaza Curicó,Curicó,Física,2026-05-03,1,235000
+María González,maria.gonzalez@gmail.com,Región del Maule,Cafetera,Hogar,Nespresso,Santa Isabel Curicó,Curicó,Física,2026-05-04,1,85000
+Sofía Pereira,sofia.pereira@gmail.com,Región del Maule,Zapatillas,Calzado,Puma,Ripley Curicó,Curicó,Física,2026-05-06,2,108000
+Rita Alarcón,rita.alarcon@gmail.com,Región del Maule,Notebook,Electrónica,Lenovo,Sodimac Homecenter Curicó,Curicó,Física,2026-05-08,1,459000

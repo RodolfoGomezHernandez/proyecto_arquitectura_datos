@@ -1,0 +1,129 @@
+{% extends 'ventas/base.html' %}
+{% block content %}
+<div class="row gx-3 gy-3">
+    <div class="col-12">
+        <div class="card card-custom p-4">
+            <h2 class="card-title">Tablero</h2>
+            <p style="color: #4B5563;">Vista general de los resultados de ventas procesadas.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-4">
+            <div class="metric-label">Total de ventas</div>
+            <div class="metric-value">{{ total }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-4">
+            <div class="metric-label">Válidos</div>
+            <div class="metric-value" style="color: #22C55E;">{{ validos }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-4">
+            <div class="metric-label">Inválidos</div>
+            <div class="metric-value" style="color: #F59E0B;">{{ invalidos }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-4">
+            <div class="metric-label">Con errores</div>
+            <div class="metric-value" style="color: #EF4444;">{{ errores }}</div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card card-custom p-4">
+            <h5 class="card-title">Indicadores</h5>
+            <div class="mt-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Porcentaje válidos</span>
+                    <strong>{{ porcentaje_validos }}%</strong>
+                </div>
+                <div class="progress mb-3" style="height: 12px; border-radius: 999px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ porcentaje_validos }}%; background: #22C55E;" aria-valuenow="{{ porcentaje_validos }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Porcentaje inválidos</span>
+                    <strong>{{ porcentaje_invalidos }}%</strong>
+                </div>
+                <div class="progress" style="height: 12px; border-radius: 999px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ porcentaje_invalidos }}%; background: #F59E0B;" aria-valuenow="{{ porcentaje_invalidos }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card card-custom p-4">
+            <h5 class="card-title">Ventas por categoría</h5>
+            <div class="py-3">
+                <canvas id="categoriaChart" height="240"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12" id="datos">
+        <div class="card card-custom p-4">
+            <h5 class="card-title">Ventas por mes</h5>
+            <div class="table-responsive mt-3">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th>Monto total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in ventas_por_mes %}
+                        <tr>
+                            <td>{{ item.fecha__month }}</td>
+                            <td>{{ item.total_monto }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2">No hay datos disponibles</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const categoriaLabels = [
+        {% for item in ventas_por_categoria %}
+            '{{ item.categoria|escapejs }}'{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ];
+    const categoriaValues = [
+        {% for item in ventas_por_categoria %}
+            {{ item.total_monto }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ];
+    const categoriaColors = ['#2563EB', '#22C55E', '#F59E0B', '#EF4444', '#2563EB', '#22C55E', '#F59E0B'];
+    new Chart(document.getElementById('categoriaChart'), {
+        type: 'pie',
+        data: {
+            labels: categoriaLabels,
+            datasets: [{
+                data: categoriaValues,
+                backgroundColor: categoriaColors.slice(0, categoriaLabels.length),
+                borderColor: '#FFFFFF',
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            animation: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#1F2A44',
+                        boxWidth: 12,
+                        padding: 16
+                    }
+                }
+            },
+            maintainAspectRatio: false,
+        }
+    });
+</script>
+{% endblock %}

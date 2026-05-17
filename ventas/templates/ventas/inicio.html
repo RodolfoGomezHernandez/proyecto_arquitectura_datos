@@ -1,0 +1,65 @@
+{% extends 'ventas/base.html' %}
+{% block content %}
+<div class="card card-custom p-4">
+    <div class="mb-3">
+        <h2 class="card-title">Cargar CSV de ventas</h2>
+        <p style="color: #4B5563;">Sube tu archivo para procesar registros de ventas en el sistema.</p>
+    </div>
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+    {% endfor %}
+    <form method="post" enctype="multipart/form-data" class="mt-3">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label class="form-label" for="id_csv_file">Archivo CSV</label>
+            {{ form.csv_file }}
+            <div class="form-text">Seleccione un archivo CSV con los campos de ventas.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Procesar CSV</button>
+    </form>
+</div>
+
+{% if summary %}
+<div class="row gx-3 gy-3 mt-4">
+    <div class="col-md-4">
+        <div class="card card-custom p-4">
+            <h5 class="card-title">Resumen</h5>
+            <p style="margin-bottom: 0.5rem;">Total de registros</p>
+            <div class="metric-value">{{ summary.total }}</div>
+            <p class="mt-3" style="color: #4B5563;">Válidos y errores del último procesamiento.</p>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card card-custom p-4">
+            <h5 class="card-title">Primeros registros procesados</h5>
+            <div class="table-responsive mt-3">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Producto</th>
+                            <th>Fecha</th>
+                            <th>Cantidad</th>
+                            <th>Monto</th>
+                            <th>Errores</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in details %}
+                        <tr>
+                            <td>{{ item.data.cliente }}</td>
+                            <td>{{ item.data.producto }}</td>
+                            <td>{{ item.data.fecha }}</td>
+                            <td>{{ item.data.cantidad }}</td>
+                            <td>{{ item.data.monto }}</td>
+                            <td>{{ item.errors }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
