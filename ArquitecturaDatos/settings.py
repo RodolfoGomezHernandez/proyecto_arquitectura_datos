@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from .db_local import get_django_mysql_config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -48,18 +49,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ArquitecturaDatos.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'rikdata',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
-    }
+    'default': get_django_mysql_config()
 }
 
 AUTH_PASSWORD_VALIDATORS = [

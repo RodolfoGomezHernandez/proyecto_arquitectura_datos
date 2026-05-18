@@ -10,6 +10,7 @@
     {% endfor %}
     <form method="post" enctype="multipart/form-data" class="mt-3">
         {% csrf_token %}
+        <input type="hidden" name="action" value="analizar_csv">
         <div class="mb-4">
             <label class="form-label" for="id_csv_file">Archivo CSV</label>
             {{ form.csv_file }}
@@ -17,6 +18,19 @@
         </div>
         <button type="submit" class="btn btn-primary">Procesar CSV</button>
     </form>
+
+    {% if pending_valid_count > 0 %}
+    <div class="mt-4 p-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 10px;">
+        <p style="margin: 0 0 0.75rem 0; color: #065F46;">
+            Hay {{ pending_valid_count }} filas limpias listas para subir a la base de datos local.
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="subir_limpio">
+            <button type="submit" class="btn btn-success">Subir a BD local</button>
+        </form>
+    </div>
+    {% endif %}
 </div>
 
 {% if summary %}
@@ -36,22 +50,18 @@
                 <table class="table mb-0">
                     <thead>
                         <tr>
-                            <th>Cliente</th>
-                            <th>Producto</th>
-                            <th>Fecha</th>
-                            <th>Cantidad</th>
-                            <th>Monto</th>
+                            {% for column in csv_columns %}
+                            <th>{{ column|capfirst }}</th>
+                            {% endfor %}
                             <th>Errores</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in details %}
                         <tr>
-                            <td>{{ item.data.cliente }}</td>
-                            <td>{{ item.data.producto }}</td>
-                            <td>{{ item.data.fecha }}</td>
-                            <td>{{ item.data.cantidad }}</td>
-                            <td>{{ item.data.monto }}</td>
+                            {% for value in item.display_values %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
                             <td>{{ item.errors }}</td>
                         </tr>
                         {% endfor %}

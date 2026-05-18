@@ -18,6 +18,9 @@ EXPECTED_COLUMNS = [
     'monto',
 ]
 
+MAX_CANTIDAD = 4294967295
+MAX_MONTO = 9999999999.99
+
 
 def normalize_text(value):
     if not isinstance(value, str):
@@ -76,16 +79,16 @@ def validate_and_transform_row(row):
         errors.append('fecha inválida')
 
     cantidad = parse_int(data['cantidad'])
-    if cantidad is None or cantidad < 0:
+    if cantidad is None or cantidad < 0 or cantidad > MAX_CANTIDAD:
         errors.append('cantidad inválida')
 
     monto = parse_decimal(data['monto'])
-    if monto is None or monto < 0:
+    if monto is None or monto < 0 or monto > MAX_MONTO:
         errors.append('monto inválido')
 
     data['fecha'] = fecha
-    data['cantidad'] = cantidad or 0
-    data['monto'] = monto or 0.0
+    data['cantidad'] = cantidad if (cantidad is not None and 0 <= cantidad <= MAX_CANTIDAD) else 0
+    data['monto'] = monto if (monto is not None and 0 <= monto <= MAX_MONTO) else 0.0
     data['cliente'] = normalize_text(data['cliente'])
     data['producto'] = normalize_text(data['producto'])
     data['categoria'] = normalize_text(data['categoria'])
@@ -105,21 +108,31 @@ def load_csv_data(file_obj):
     reader = csv.DictReader(decoded)
     headers = [h.strip() for h in reader.fieldnames or []]
 
-    if headers != EXPECTED_COLUMNS:
-        raise ValueError('Las columnas del CSV no coinciden con el formato esperado.')
+    if not headers:
+        raise ValueError('El CSV no contiene encabezados de columnas.')
+
+    missing_columns = [column for column in EXPECTED_COLUMNS if column not in headers]
+    if missing_columns:
+        raise ValueError(
+            'Faltan columnas obligatorias en el CSV: '
+            + ', '.join(missing_columns)
+        )
 
     processed = []
     seen = set()
 
     for row in reader:
-        row_key = tuple((row.get(col, '') or '').strip() for col in EXPECTED_COLUMNS)
+        raw_row = {column: (row.get(column, '') or '').strip() for column in headers}
+        row_key = tuple(raw_row.get(column, '') for column in headers)
         if row_key in seen:
             continue
         seen.add(row_key)
 
-        data, valido, errors = validate_and_transform_row(row)
+        data, valido, errors = validate_and_transform_row(raw_row)
         processed.append({
             'data': data,
+            'raw': raw_row,
+            'display_values': [raw_row.get(column, '') for column in headers],
             'valido': valido,
             'errors': '; '.join(errors),
         })
@@ -130,12 +143,14 @@ def load_csv_data(file_obj):
         'errores': sum(1 for item in processed if item['errors']),
     }
 
-    return processed, summary
+    return processed, summary, headers
 
 
 def save_fact_ventas(processed_rows):
     saved_rows = []
     for row in processed_rows:
+        if not row.get('valido', False):
+            continue
         data = row['data']
         saved_rows.append(
             FactVenta.objects.create(
