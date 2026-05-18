@@ -1,129 +1,147 @@
 {% extends 'ventas/base.html' %}
 {% block content %}
-<div class="row gx-3 gy-3">
-    <div class="col-12">
-        <div class="card card-custom p-4">
-            <h2 class="card-title">Tablero</h2>
-            <p style="color: #4B5563;">Vista general de los resultados de ventas procesadas.</p>
-        </div>
+<div class="card mb-3">
+    <div class="card-body">
+        <h4 class="mb-1">Tablero</h4>
+        <p class="text-muted mb-0">Resumen del procesamiento y datos limpios.</p>
     </div>
-    <div class="col-md-3">
-        <div class="card card-custom p-4">
-            <div class="metric-label">Total de ventas</div>
-            <div class="metric-value">{{ total }}</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card card-custom p-4">
-            <div class="metric-label">Válidos</div>
-            <div class="metric-value" style="color: #22C55E;">{{ validos }}</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card card-custom p-4">
-            <div class="metric-label">Inválidos</div>
-            <div class="metric-value" style="color: #F59E0B;">{{ invalidos }}</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card card-custom p-4">
-            <div class="metric-label">Con errores</div>
-            <div class="metric-value" style="color: #EF4444;">{{ errores }}</div>
-        </div>
-    </div>
-    <div class="col-12 col-lg-6">
-        <div class="card card-custom p-4">
-            <h5 class="card-title">Indicadores</h5>
-            <div class="mt-3">
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Porcentaje válidos</span>
-                    <strong>{{ porcentaje_validos }}%</strong>
-                </div>
-                <div class="progress mb-3" style="height: 12px; border-radius: 999px;">
-                    <div class="progress-bar" role="progressbar" style="width: {{ porcentaje_validos }}%; background: #22C55E;" aria-valuenow="{{ porcentaje_validos }}" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Porcentaje inválidos</span>
-                    <strong>{{ porcentaje_invalidos }}%</strong>
-                </div>
-                <div class="progress" style="height: 12px; border-radius: 999px;">
-                    <div class="progress-bar" role="progressbar" style="width: {{ porcentaje_invalidos }}%; background: #F59E0B;" aria-valuenow="{{ porcentaje_invalidos }}" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="small text-muted">Total procesados</div>
+                <div class="h4 mb-0">{{ total_procesados }}</div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-lg-6">
-        <div class="card card-custom p-4">
-            <h5 class="card-title">Ventas por categoría</h5>
-            <div class="py-3">
-                <canvas id="categoriaChart" height="240"></canvas>
+    <div class="col-6 col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="small text-muted">Validos</div>
+                <div class="h4 mb-0 text-success">{{ validos_procesados }}</div>
             </div>
         </div>
     </div>
-    <div class="col-12" id="datos">
-        <div class="card card-custom p-4">
-            <h5 class="card-title">Ventas por mes</h5>
-            <div class="table-responsive mt-3">
-                <table class="table mb-0">
-                    <thead>
-                        <tr>
-                            <th>Mes</th>
-                            <th>Monto total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in ventas_por_mes %}
-                        <tr>
-                            <td>{{ item.fecha__month }}</td>
-                            <td>{{ item.total_monto }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="2">No hay datos disponibles</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="col-6 col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="small text-muted">Corregidos</div>
+                <div class="h4 mb-0 text-warning">{{ corregidos_procesados }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="small text-muted">Errores detectados</div>
+                <div class="h4 mb-0 text-danger">{{ errores_detectados }}</div>
             </div>
         </div>
     </div>
 </div>
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-3">Grafico: Ventas por categoria</h6>
+                <div style="height: 260px;">
+                    <canvas id="categoriaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-3">Grafico: Ventas por mes</h6>
+                <div style="height: 260px;">
+                    <canvas id="mesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h6 class="mb-3">Tabla final de datos limpios (en BD: {{ total_limpios_bd }})</h6>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Email</th>
+                        <th>Region</th>
+                        <th>Producto</th>
+                        <th>Categoria</th>
+                        <th>Fecha</th>
+                        <th>Cantidad</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in clean_rows %}
+                    <tr>
+                        <td>{{ row.cliente }}</td>
+                        <td>{{ row.email }}</td>
+                        <td>{{ row.region }}</td>
+                        <td>{{ row.producto }}</td>
+                        <td>{{ row.categoria }}</td>
+                        <td>{{ row.fecha }}</td>
+                        <td>{{ row.cantidad }}</td>
+                        <td>{{ row.monto }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">No hay datos limpios en la base local.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{{ categoria_labels|json_script:"categoria-labels-data" }}
+{{ categoria_values|json_script:"categoria-values-data" }}
+{{ mes_labels|json_script:"mes-labels-data" }}
+{{ mes_values|json_script:"mes-values-data" }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    const categoriaLabels = [
-        {% for item in ventas_por_categoria %}
-            '{{ item.categoria|escapejs }}'{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    ];
-    const categoriaValues = [
-        {% for item in ventas_por_categoria %}
-            {{ item.total_monto }}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    ];
-    const categoriaColors = ['#2563EB', '#22C55E', '#F59E0B', '#EF4444', '#2563EB', '#22C55E', '#F59E0B'];
-    new Chart(document.getElementById('categoriaChart'), {
-        type: 'pie',
-        data: {
-            labels: categoriaLabels,
-            datasets: [{
-                data: categoriaValues,
-                backgroundColor: categoriaColors.slice(0, categoriaLabels.length),
-                borderColor: '#FFFFFF',
-                borderWidth: 1,
-            }]
-        },
-        options: {
-            animation: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#1F2A44',
-                        boxWidth: 12,
-                        padding: 16
-                    }
-                }
+    const categoriaLabelsRaw = JSON.parse(document.getElementById('categoria-labels-data').textContent);
+    const categoriaValuesRaw = JSON.parse(document.getElementById('categoria-values-data').textContent);
+    const mesLabelsRaw = JSON.parse(document.getElementById('mes-labels-data').textContent);
+    const mesValuesRaw = JSON.parse(document.getElementById('mes-values-data').textContent);
+
+    const categoriaLabels = categoriaLabelsRaw.length ? categoriaLabelsRaw : ['Sin datos'];
+    const categoriaValues = categoriaValuesRaw.length ? categoriaValuesRaw : [1];
+    const mesLabels = mesLabelsRaw.length ? mesLabelsRaw : ['Sin datos'];
+    const mesValues = mesValuesRaw.length ? mesValuesRaw : [0];
+
+    const categoriaCtx = document.getElementById('categoriaChart');
+    const mesCtx = document.getElementById('mesChart');
+
+    if (typeof Chart !== 'undefined' && categoriaCtx && mesCtx) {
+        new Chart(categoriaCtx, {
+            type: 'pie',
+            data: {
+                labels: categoriaLabels,
+                datasets: [{ data: categoriaValues }]
             },
-            maintainAspectRatio: false,
-        }
-    });
+            options: { maintainAspectRatio: false }
+        });
+
+        new Chart(mesCtx, {
+            type: 'bar',
+            data: {
+                labels: mesLabels,
+                datasets: [{ label: 'Monto', data: mesValues }]
+            },
+            options: { maintainAspectRatio: false }
+        });
+    }
 </script>
 {% endblock %}

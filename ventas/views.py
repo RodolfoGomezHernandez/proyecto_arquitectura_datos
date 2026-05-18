@@ -9,6 +9,10 @@ from .utils import load_csv_data, save_fact_ventas
 
 SESSION_PENDING_VALID_ROWS = 'pending_valid_rows'
 SESSION_PENDING_COUNT = 'pending_valid_count'
+SESSION_LAST_TOTAL = 'last_total_processed'
+SESSION_LAST_VALID = 'last_valid_processed'
+SESSION_LAST_CORRECTED = 'last_corrected_processed'
+SESSION_LAST_ERRORS = 'last_errors_processed'
 
 
 def _serialize_valid_rows(rows):
@@ -71,8 +75,13 @@ def inicio(request):
                 processed, summary, csv_columns = load_csv_data(csv_file.file)
                 details = processed[:100]
                 valid_rows = [row for row in processed if row['valido']]
+                corrected_count = summary['total'] - summary['validos']
                 request.session[SESSION_PENDING_VALID_ROWS] = _serialize_valid_rows(valid_rows)
                 request.session[SESSION_PENDING_COUNT] = len(valid_rows)
+                request.session[SESSION_LAST_TOTAL] = summary['total']
+                request.session[SESSION_LAST_VALID] = summary['validos']
+                request.session[SESSION_LAST_CORRECTED] = corrected_count
+                request.session[SESSION_LAST_ERRORS] = summary['errores']
                 request.session.modified = True
                 pending_valid_count = len(valid_rows)
                 messages.success(request, 'Analisis completado. Revisa errores y luego usa "Subir a BD local".')
@@ -91,33 +100,45 @@ def inicio(request):
 
 
 def tablero(request):
-    total = FactVenta.objects.count()
-    validos = FactVenta.objects.filter(valido=True).count()
-    invalidos = total - validos
-    errores = FactVenta.objects.exclude(errores='').count()
-    porcentaje_validos = round((validos / total * 100), 2) if total else 0
-    porcentaje_invalidos = round((invalidos / total * 100), 2) if total else 0
-    ventas_por_categoria = (
+    clean_total = FactVenta.objects.count()
+    processed_total = request.session.get(SESSION_LAST_TOTAL, clean_total)
+    processed_valid = request.session.get(SESSION_LAST_VALID, clean_total)
+    processed_corrected = request.session.get(SESSION_LAST_CORRECTED, 0)
+    processed_errors = request.session.get(SESSION_LAST_ERRORS, 0)
+    porcentaje_validos = round((processed_valid / processed_total * 100), 2) if processed_total else 0
+    porcentaje_corregidos = round((processed_corrected / processed_total * 100), 2) if processed_total else 0
+    ventas_por_categoria = list(
         FactVenta.objects
         .values('categoria')
         .annotate(total_monto=Sum('monto'), total_cantidad=Sum('cantidad'))
         .order_by('-total_monto')
     )
-    ventas_por_mes = (
+    ventas_por_mes = list(
         FactVenta.objects
         .exclude(fecha__isnull=True)
         .values('fecha__month')
-        .annotate(total_monto=Sum('monto'))
+        .annotate(total_monto=Sum('monto'), total_cantidad=Sum('cantidad'))
         .order_by('fecha__month')
     )
+    categoria_labels = [(item['categoria'] or 'Sin categoria') for item in ventas_por_categoria]
+    categoria_values = [float(item['total_monto'] or 0) for item in ventas_por_categoria]
+    mes_labels = [f"Mes {item['fecha__month']}" for item in ventas_por_mes]
+    mes_values = [float(item['total_monto'] or 0) for item in ventas_por_mes]
+    clean_rows = FactVenta.objects.order_by('-creado')[:100]
 
     return render(request, 'ventas/tablero.html', {
-        'total': total,
-        'validos': validos,
-        'invalidos': invalidos,
-        'errores': errores,
+        'total_procesados': processed_total,
+        'validos_procesados': processed_valid,
+        'corregidos_procesados': processed_corrected,
+        'errores_detectados': processed_errors,
+        'total_limpios_bd': clean_total,
         'porcentaje_validos': porcentaje_validos,
-        'porcentaje_invalidos': porcentaje_invalidos,
+        'porcentaje_corregidos': porcentaje_corregidos,
         'ventas_por_categoria': ventas_por_categoria,
         'ventas_por_mes': ventas_por_mes,
+        'categoria_labels': categoria_labels,
+        'categoria_values': categoria_values,
+        'mes_labels': mes_labels,
+        'mes_values': mes_values,
+        'clean_rows': clean_rows,
     })
